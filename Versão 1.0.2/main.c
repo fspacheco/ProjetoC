@@ -1,11 +1,11 @@
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 || Pedro dos Santos Guerreiro e Thyago Augusto Reboledo                                                                     ||
-|| Vers„o 1.0 (29/05/2015)                                                                                                  ||
-|| Vers„o 1.1 (30/05/2015)                                                                                                  ||
-|| Vers„o 1.2 (02/06/2015)                                                                                                  ||
+|| Vers√£o 1.0.0 (29/05/2015)                                                                                                  ||
+|| Vers√£o 1.0.1 (30/05/2015)                                                                                                  ||
+|| Vers√£o 1.0.2 (02/06/2015)                                                                                                  ||
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-/*# -> os coment·rios que tiverem isso ainda est„o em desenvolvimento */
+/*# -> os coment√°rios que tiverem isso ainda est√£o em desenvolvimento */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,13 +113,13 @@ int main()
 
     background background_0;
 
-    /* Faz com que as teclas comeÁem em false */
+    /* Faz com que as teclas come√ßem em false */
     for(i=0; i<KEY_MAX; i++)
     {
         keys[i] = false;
     }
 
-    /* Carrega as configuraÁıes (teclado, audio, etc) */
+    /* Carrega as configura√ß√µes (teclado, audio, etc) */
     al_init();
     al_init_primitives_addon();
     al_install_keyboard();
@@ -220,7 +220,7 @@ int main()
 
         case 1:
 
-            /* Toca a m˙sica de fundo */
+            /* Toca a m√∫sica de fundo */
             al_play_sample(spl_theme, 0.9, 0, 1, ALLEGRO_PLAYMODE_LOOP, 0);
 
             /* Fechar o display */
@@ -230,7 +230,7 @@ int main()
                 quit = true;
             }
 
-            /* Evento de quando a tecla È pressionada */
+            /* Evento de quando a tecla √© pressionada */
             if(ev.type == ALLEGRO_EVENT_KEY_DOWN)
             {
                 switch(ev.keyboard.keycode)
@@ -259,7 +259,7 @@ int main()
                 }
             }
 
-            /* Evento de quando a tecla È solta */
+            /* Evento de quando a tecla √© solta */
             if(ev.type == ALLEGRO_EVENT_KEY_UP)
             {
                 switch(ev.keyboard.keycode)
@@ -309,19 +309,19 @@ int main()
                     cameraX = player.x-(SCREEN_W/2);
                     cameraY = player.y-(SCREEN_H/2);
 
-                    /* Fazer com que a camera n„o passe dos limites do mapa */
+                    /* Fazer com que a camera n√£o passe dos limites do mapa */
                     if (cameraX < 0) cameraX = 0;
                     if (cameraY < 0) cameraY = 0;
                     if (cameraX > WORLD_W - SCREEN_W) cameraX = WORLD_W - SCREEN_W;
                     if (cameraY > WORLD_H - SCREEN_H) cameraY = WORLD_H - SCREEN_H;
 
-                    /* Colis„o do player na parede */
+                    /* Colis√£o do player na parede */
                     collision_player_wall(&player, img_player_R[0]);
 
                     /* Desenha o Background */
                     drawnBackground(&background_0);
 
-                    /* Desenho + AnimaÁ„o do player */
+                    /* Desenho + Anima√ß√£o do player */
                     if(++frameCount >= frameDelay)
                     {
                         if(++curFrame >= maxFrame)
