@@ -1,11 +1,11 @@
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 || Pedro dos Santos Guerreiro e Thyago Augusto Reboledo                                                                     ||
 || projetoHeader.h                                                                                                          ||
-|| Vers„o 1.0 (30/05/2015)                                                                                                  ||
-|| Vers„o 1.1 (02/06/2015)                                                                                                  ||
+|| Vers√£o 1.0.0 (30/05/2015)                                                                                                  ||
+|| Vers√£o 1.0.1 (02/06/2015)                                                                                                  ||
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-/*# -> os coment·rios que tiverem isso ainda est„o em desenvolvimento */
+/*# -> os coment√°rios que tiverem isso ainda est√£o em desenvolvimento */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -100,7 +100,7 @@ typedef struct
     ALLEGRO_BITMAP* image;
 } background;
 
-/* ------------------------------FunÁıes------------------------------ */
+/* ------------------------------Fun√ß√µes------------------------------ */
 
 /* ~~~~~~~~~~~~~~~~~~~~Background~~~~~~~~~~~~~~~~~~~~ */
 
@@ -135,7 +135,7 @@ void playerShoot(s_object *player, s_object *bullet, ALLEGRO_SAMPLE *spl)
     }
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~Colisıes~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~Colis√µes~~~~~~~~~~~~~~~~~~~~ */
 
 void collision_player_wall(s_object *player, ALLEGRO_BITMAP* img_player)
 {
