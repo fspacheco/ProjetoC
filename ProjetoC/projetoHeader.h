@@ -32,18 +32,15 @@ int cameraY = 0;
 const int LINHA_MAX = 15;
 const int COLUNA_MAX = 20;
 
+bool jump = false;
+int gravity = 10;
+float force = 0;
+
 const int PLAYERBULLET_MAX = 3;
 const int ENEMYBULLET_MAX = 3;
 const int ENEMY_MAX = 20;
 int enemyBulletCount = 0;
 int enemyBulletID = 0;
-
-const int maxFrame = 8;
-int curFrame = 0;
-int frameCount = 0;
-int frameDelay = 5;
-int frameWidth = 40;
-int frameHeight = 40;
 
 int playerLife = 100;
 int scores = 0;
@@ -51,10 +48,8 @@ int scores = 0;
 enum
 {
     KEY_RIGHT,
-    KEY_UP,
     KEY_LEFT,
-    KEY_DOWN,
-    KEY_ESC,
+    KEY_UP,
     KEY_MAX
 };
 
@@ -97,28 +92,29 @@ typedef struct
     int height;
 
     ALLEGRO_BITMAP* image;
-} background;
+} s_background;
+
+typedef struct
+{
+    int maxFrame;
+    int curFrame;
+    int frameCount;
+    int frameDelay;
+    int frameWidth;
+    int frameHeight;
+} s_animation;
 
 /* ------------------------------Funções------------------------------ */
 
 /* ~~~~~~~~~~~~~~~~~~~~Background~~~~~~~~~~~~~~~~~~~~ */
 
-void initBackground(background *back, float x, float y, int width, int height, ALLEGRO_BITMAP* image)
+void drawnBackground(s_background *bkg)
 {
-    back->x = x;
-    back->y = y;
-    back->width = width;
-    back->height = height;
-    back->image = image;
-}
+    al_draw_bitmap(bkg->image, bkg->x-cameraX, bkg->y-cameraY, 0);
 
-void drawnBackground(background *back)
-{
-    al_draw_bitmap(back->image, back->x-cameraX, back->y-cameraY, 0);
-
-    if(back->x + back->width < WORLD_W)
+    if(bkg->x + bkg->width < WORLD_W)
     {
-        al_draw_bitmap(back->image, back->x-cameraX + back->width, back->y-cameraY, 0);
+        al_draw_bitmap(bkg->image, bkg->x-cameraX + bkg->width, bkg->y-cameraY, 0);
     }
 }
 /* ~~~~~~~~~~~~~~~~~~~~Shoots~~~~~~~~~~~~~~~~~~~~ */
@@ -136,22 +132,23 @@ void playerShoot(s_object *player, s_object *bullet, ALLEGRO_SAMPLE *spl)
 
 /* ~~~~~~~~~~~~~~~~~~~~Colisões~~~~~~~~~~~~~~~~~~~~ */
 
-void collision_player_wall(s_object *player)
+void collision_player_wall(s_object *player, ALLEGRO_BITMAP* img_block)
 {
-    if (player->x < 64)
+    if (player->x < al_get_bitmap_width(img_block))
     {
-        player->x = 64;
+        player->x = al_get_bitmap_width(img_block);
     }
-    if (player->x > WORLD_W - (64+frameWidth))
+    if (player->x > WORLD_W - (al_get_bitmap_width(img_block)+40))
     {
-        player->x = WORLD_W - (64+frameWidth);
+        player->x = WORLD_W - (al_get_bitmap_width(img_block)+40);
     }
-    if (player->y < 48)
+    if (player->y < al_get_bitmap_height(img_block))
     {
-        player->y = 48;
+        player->y = al_get_bitmap_height(img_block);
     }
-    if (player->y > WORLD_H - (48+frameHeight))
+    if (player->y > WORLD_H - (al_get_bitmap_height(img_block)+40))
     {
-        player->y = WORLD_H - (48+frameHeight);
+        player->y = WORLD_H - (al_get_bitmap_height(img_block)+40);
+        jump = false;
     }
 }
