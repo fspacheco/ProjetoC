@@ -23,7 +23,6 @@
 
 int main()
 {
-    int playerDirection = -1; /* -1 = Direita, 1 = Esquerda */
     bool quit = false;
     int gamestate = 0;
     int i=0;
@@ -294,6 +293,7 @@ int main()
                     if(jump == true)
                     {
                         player.y-=force;
+
                     }
                     if(keys[KEY_RIGHT])
                     {
@@ -318,6 +318,8 @@ int main()
 
                     /* Colisão do player na parede */
                     collision_player_wall(&player, img_block);
+
+                    collision_player_tiles(&player, &block[12][3], img_block);
 
                     /* Desenha o Background */
                     drawnBackground(&background_0);

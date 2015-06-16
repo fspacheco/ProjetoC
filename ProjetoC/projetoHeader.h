@@ -42,6 +42,7 @@ const int ENEMY_MAX = 20;
 int enemyBulletCount = 0;
 int enemyBulletID = 0;
 
+int playerDirection = -1; /* -1 = Direita, 1 = Esquerda */
 int playerLife = 100;
 int scores = 0;
 
@@ -69,7 +70,7 @@ int mapa[15][20] =
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 };
@@ -150,5 +151,17 @@ void collision_player_wall(s_object *player, ALLEGRO_BITMAP* img_block)
     {
         player->y = WORLD_H - (al_get_bitmap_height(img_block)+40);
         jump = false;
+    }
+}
+
+void collision_player_tiles(s_object *player, s_object *block, ALLEGRO_BITMAP* img_block)
+{
+    if(player->x < block->x + al_get_bitmap_width(img_block) && block->x < player->x + 40 && player->y < block->y + al_get_bitmap_height(img_block) && block->y < player->y + 40 && block->live && playerDirection == 1)
+    {
+        player->x = block->x + al_get_bitmap_width(img_block);
+    }
+    else if(player->x < block->x + al_get_bitmap_width(img_block) && block->x < player->x + 40 && player->y < block->y + al_get_bitmap_height(img_block) && block->y < player->y + 40 && block->live && playerDirection == -1)
+    {
+        player->x = block->x - 40;
     }
 }
