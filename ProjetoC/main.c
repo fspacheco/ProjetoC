@@ -1,12 +1,10 @@
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-|| Pedro dos Santos Guerreiro e Thyago Augusto Reboledo                                                                ||
-|| Versão 1.0.0 (29/05/2015)                                                                                           ||
-|| Versão 1.0.1 (30/05/2015)                                                                                           ||
-|| Versão 1.0.2 (02/06/2015)                                                                                           ||
-|| Versão 1.0.3 (08/06/2015)                                                                                           ||
+|| Pedro dos Santos Guerreiro                                                                                          ||
+||Thyago Augusto Reboledo                                                                                              ||
+|| Projeto C                                                                                                           ||
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-/*# -> os comentários que tiverem isso ainda estão em desenvolvimento */
+/*# -> os comentarios que tiverem isso ainda estao em desenvolvimento */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,28 +23,28 @@ int main()
 {
     bool quit = false;
     int gamestate = 0;
-    int i=0;
-    int j=0;
     srand(time(NULL));
 
-    ALLEGRO_DISPLAY*        display;
-    ALLEGRO_TIMER*          timer;
-    ALLEGRO_EVENT_QUEUE*    event_queue;
-    ALLEGRO_EVENT           ev;
+    ALLEGRO_DISPLAY*            display;
+    ALLEGRO_TIMER*              timer;
+    ALLEGRO_EVENT_QUEUE*        event_queue;
+    ALLEGRO_EVENT               ev;
 
-    ALLEGRO_BITMAP*         img_block;
-    ALLEGRO_BITMAP*         img_player_R;
-    ALLEGRO_BITMAP*         img_player_L;
-    ALLEGRO_BITMAP*         img_player_immobile_R;
-    ALLEGRO_BITMAP*         img_player_immobile_L;
-    ALLEGRO_BITMAP*         img_player_jump_R;
-    ALLEGRO_BITMAP*         img_player_jump_L;
-    /*#ALLEGRO_BITMAP*         img_enemy1;*/
-    /*#ALLEGRO_BITMAP*         img_enemy_bullet;*/
+    ALLEGRO_BITMAP*             img_block;
+    ALLEGRO_BITMAP*             img_player_walking;
+    ALLEGRO_BITMAP*             img_player_immobile;
+    ALLEGRO_BITMAP*             img_player_jump;
+    ALLEGRO_BITMAP*             img_player_bullet;
+    /*#ALLEGRO_BITMAP*             img_enemy1;*/
+    /*#ALLEGRO_BITMAP*             img_enemy_bullet;*/
 
-    ALLEGRO_SAMPLE*         spl_theme;
-    /*#ALLEGRO_SAMPLE*         spl_mlk;*/
-    /*#ALLEGRO_SAMPLE*         spl_playerShoot;*/
+    ALLEGRO_SAMPLE*             spl_theme;
+    ALLEGRO_SAMPLE*             spl_playerShoot;
+    ALLEGRO_SAMPLE*             spl_mlk;
+
+    ALLEGRO_SAMPLE_INSTANCE*    instance_theme;
+    ALLEGRO_SAMPLE_INSTANCE*    instance_playerShoot;
+    ALLEGRO_SAMPLE_INSTANCE*    instance_mlk;
 
     ALLEGRO_FONT*           fonte;
 
@@ -61,7 +59,7 @@ int main()
             /* Cria o player */
             if(mapa[i][j] == 2)
             {
-                player.y = i*48 + 8; /* O "+8" é por causa do tamanho da img do player (40x40) em comparação ao tamanho do bloco (64x48) */
+                player.y = i*48 + 8; /* O "+8" eh por causa do tamanho da img do player (40x40) em comparacao ao tamanho do bloco (64x48) */
                 player.x = j*64;
                 player.live = true;
                 block[i][j].live = false;
@@ -80,11 +78,6 @@ int main()
         }
     }
 
-    /*#s_object playerBullet;
-    playerBullet.x = 0;
-    playerBullet.y = 0;
-    playerBullet.live = false;*/
-
     /*#s_object enemy[ENEMY_MAX];
     for (i=0; i<ENEMY_MAX; i++)
     {
@@ -93,13 +86,15 @@ int main()
         enemy[i].live = false;
     }*/
 
-    /*#s_object enemyBullet[ENEMYBULLET_MAX];
-    for(i=0; i < ENEMYBULLET_MAX; i++)
+    s_bullet playerBullet[NUM_BULLET];
+    for(i=0; i<NUM_BULLET; i++)
     {
-        enemyBullet[i].x = 0;
-        enemyBullet[i].y = 0;
-        enemyBullet[i].live = false;
-    }*/
+        playerBullet[i].x = 0;
+        playerBullet[i].y = 0;
+        playerBullet[i].speed = 5;
+        playerBullet[i].direction = 1;
+        playerBullet[i].live = false;
+    }
 
     s_background background_0;
 
@@ -118,20 +113,28 @@ int main()
     walking.frameWidth = 40;
 
     s_animation jumping;
-    jumping.maxFrame = 9;
+    jumping.maxFrame = 7;
     jumping.frameDelay = 5;
     jumping.frameCount = 0;
     jumping.curFrame = 0;
     jumping.frameHeight = 52;
     jumping.frameWidth = 40;
 
-    /* Faz com que as teclas começem em false */
+    s_animation immobile;
+    immobile.maxFrame = 7;
+    immobile.frameDelay = 15;
+    immobile.frameCount = 0;
+    immobile.curFrame = 0;
+    immobile.frameHeight = 40;
+    immobile.frameWidth = 40;
+
+    /* Faz com que as teclas comecem em false */
     for(i=0; i<KEY_MAX; i++)
     {
         keys[i] = false;
     }
 
-    /* Carrega as configurações (teclado, audio, etc) */
+    /* Carrega as configuracoes (teclado, audio, etc) */
     al_init();
     al_init_primitives_addon();
     al_install_keyboard();
@@ -167,19 +170,25 @@ int main()
     /* Carregando as Imagens */
     background_0.image = al_load_bitmap("Sprites/Background/background_h1n1.png");
     img_block = al_load_bitmap("Sprites/block.png");
-    img_player_R = al_load_bitmap("Sprites/Player/player_R.png");
-    img_player_L = al_load_bitmap("Sprites/Player/player_L.png");
-    img_player_immobile_R = al_load_bitmap("Sprites/Player/player_immobile_R.png");
-    img_player_immobile_L = al_load_bitmap("Sprites/Player/player_immobile_L.png");
-    img_player_jump_R = al_load_bitmap("Sprites/Player/player_jump_R.png");
-    img_player_jump_L = al_load_bitmap("Sprites/Player/player_jump_L.png");
+    img_player_walking = al_load_bitmap("Sprites/Player/player_walking.png");
+    img_player_immobile = al_load_bitmap("Sprites/Player/player_immobile.png");
+    img_player_jump = al_load_bitmap("Sprites/Player/player_jump.png");
+    img_player_bullet = al_load_bitmap("Sprites/Player/player_bullet.png");
     /*#img_enemy = al_load_bitmap("Sprites/Enemies/enemy_h1n1.png");*/
 
     /* Carregando os Samples */
-    al_reserve_samples(1);
+    al_reserve_samples(10);
     spl_theme = al_load_sample("Sounds/theme.wav");
-    /*#spl_mlk = al_load(Sounds/mlk.wav);*/
-    /*#spl_playerShoot = al_load();*/
+    spl_playerShoot = al_load_sample("Sounds/shoot.wav");
+    spl_mlk = al_load_sample("Sounds/mlk.wav");
+
+    instance_theme = al_create_sample_instance(spl_theme);
+    instance_playerShoot = al_create_sample_instance(spl_playerShoot);
+    instance_mlk = al_create_sample_instance(spl_mlk);
+
+    al_attach_sample_instance_to_mixer(instance_theme, al_get_default_mixer());
+    al_attach_sample_instance_to_mixer(instance_playerShoot, al_get_default_mixer());
+    al_attach_sample_instance_to_mixer(instance_mlk, al_get_default_mixer());
 
     /* Registra os Eventos */
     al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -199,7 +208,7 @@ int main()
         case 0:
             al_wait_for_event(event_queue, &ev);
 
-            if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) /* Faz com que o jogo feche ao clicar no botão "X" do display */
+            if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) /* Faz com que o jogo feche ao clicar no botao "X" do display */
             {
                 quit = true;
             }
@@ -232,7 +241,10 @@ int main()
             force-=0.5; /* Queda */
 
             /* Toca a música de fundo */
-            al_play_sample(spl_theme, 0.9, 0, 1, ALLEGRO_PLAYMODE_LOOP, 0);
+            if(!al_get_sample_instance_playing(instance_theme))
+            {
+                al_play_sample_instance(instance_theme);
+            }
 
             /* Fechar o display */
             al_wait_for_event(event_queue, &ev);
@@ -242,7 +254,7 @@ int main()
                 quit = true;
             }
 
-            /* Evento de quando a tecla é pressionada */
+            /* Evento de quando a tecla eh pressionada */
             if(ev.type == ALLEGRO_EVENT_KEY_DOWN)
             {
                 switch(ev.keyboard.keycode)
@@ -265,13 +277,28 @@ int main()
                     keys[KEY_LEFT]=false;
                     keys[KEY_RIGHT]=true;
                     break;
-                    /*#case ALLEGRO_KEY_SPACE:
-                        playerShoot(&player, &playerBullet, spl_playerShoot);
-                    break;*/
+                case ALLEGRO_KEY_SPACE:
+                    for(i=0; i<NUM_BULLET; i++)
+                    {
+                        if(!al_get_sample_instance_playing(instance_playerShoot))
+                        {
+                            playerShoot(&player, &playerBullet[i], instance_playerShoot);
+                        }
+                    }
+                    break;
+                case ALLEGRO_KEY_M:
+                    if(!al_get_sample_instance_playing(instance_mlk))
+                    {
+                        al_play_sample_instance(instance_mlk);
+                    }
+                    break;
+                case ALLEGRO_KEY_P:
+                    al_stop_sample_instance(instance_mlk);
+                    break;
                 }
             }
 
-            /* Evento de quando a tecla é solta */
+            /* Evento de quando a tecla eh solta */
             if(ev.type == ALLEGRO_EVENT_KEY_UP)
             {
                 switch(ev.keyboard.keycode)
@@ -293,33 +320,65 @@ int main()
                     if(jump == true)
                     {
                         player.y-=force;
-
                     }
                     if(keys[KEY_RIGHT])
                     {
-                        playerDirection=-1;
+                        playerDirection=1;
                         player.x+=2;
                     }
                     if(keys[KEY_LEFT])
                     {
-                        playerDirection=1;
+                        playerDirection=-1;
                         player.x-=2;
+                    }
+
+                    /* Posicionamento do projetil*/
+                    for(i=0; i<NUM_BULLET; i++)
+                    {
+                        if(!playerBullet[i].live)
+                        {
+                            playerBullet[i].direction = playerDirection;
+                        }
+
+                        if(playerBullet[i].live)
+                        {
+                            if(playerBullet[i].direction == -1)
+                            {
+                                playerBullet[i].x-=playerBullet[i].speed;
+                            }
+                            else if(playerBullet[i].direction == 1)
+                            {
+                                playerBullet[i].x+=playerBullet[i].speed;
+                            }
+                        }
                     }
 
                     /* Prende a Camera no Personagem */
                     cameraX = player.x-(SCREEN_W/2);
                     cameraY = player.y-(SCREEN_H/2);
 
-                    /* Fazer com que a camera não passe dos limites do mapa */
+                    /* Fazer com que a camera nao passe dos limites do mapa */
                     if (cameraX < 0) cameraX = 0;
                     if (cameraY < 0) cameraY = 0;
                     if (cameraX > WORLD_W - SCREEN_W) cameraX = WORLD_W - SCREEN_W;
                     if (cameraY > WORLD_H - SCREEN_H) cameraY = WORLD_H - SCREEN_H;
 
-                    /* Colisão do player na parede */
-                    collision_player_wall(&player, img_block);
+                    /* Colisoes */
+                    collision_player_wall(&player, &jumping, img_block);
 
-                    collision_player_tiles(&player, &block[12][3], img_block);
+                    for (i = 0; i<LINHA_MAX; i++)
+                    {
+                        for(j = 0; j<COLUNA_MAX; j++)
+                        {
+                            if(block[i][j].live == true)
+                            {
+                                for(k=0; k<NUM_BULLET; k++)
+                                {
+                                    collision_bullet_tiles(&playerBullet[k], &block[i][j], img_player_bullet, img_block);
+                                }
+                            }
+                        }
+                    }
 
                     /* Desenha o Background */
                     drawnBackground(&background_0);
@@ -339,13 +398,21 @@ int main()
                     /* Desenho do player */
 
                     /* Player parado */
-                    if(jump == false && ((!keys[KEY_LEFT] && playerDirection == 1) || player.x == 64))
+                    if(++immobile.frameCount >= immobile.frameDelay)
                     {
-                        al_draw_bitmap(img_player_immobile_L, player.x-cameraX, player.y-cameraY, 0);
+                        if(++immobile.curFrame >= immobile.maxFrame)
+                        {
+                            immobile.curFrame = 0;
+                        }
+                        immobile.frameCount = 0;
                     }
-                    else if(jump == false && ((!keys[KEY_RIGHT] && playerDirection == -1) || player.x == WORLD_W - (64+walking.frameWidth)))
+                    if(jump == false && ((!keys[KEY_LEFT] && playerDirection == -1) || player.x == 64))
                     {
-                        al_draw_bitmap(img_player_immobile_R, player.x-cameraX, player.y-cameraY, 0);
+                        al_draw_bitmap_region(img_player_immobile, immobile.curFrame * immobile.frameWidth, 0, immobile.frameWidth, immobile.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
+                    }
+                    else if(jump == false && ((!keys[KEY_RIGHT] && playerDirection == 1) || player.x == WORLD_W - (64+immobile.frameWidth)))
+                    {
+                        al_draw_bitmap_region(img_player_immobile, immobile.curFrame * immobile.frameWidth, 0, immobile.frameWidth, immobile.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                     }
 
                     /* Player andando */
@@ -358,32 +425,45 @@ int main()
                         walking.frameCount = 0;
                     }
 
-                    if(jump == false && keys[KEY_LEFT] && playerDirection == 1 && player.x != 64)
+                    if(jump == false && keys[KEY_LEFT] && playerDirection == -1 && player.x != 64)
                     {
-                        al_draw_bitmap_region(img_player_L, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, 0);
+                        al_draw_bitmap_region(img_player_walking, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
                     }
-                    else if(jump == false && keys[KEY_RIGHT] && playerDirection == -1 && player.x != WORLD_W - (64+walking.frameWidth))
+                    else if(jump == false && keys[KEY_RIGHT] && playerDirection == 1 && player.x != WORLD_W - (64+walking.frameWidth))
                     {
-                        al_draw_bitmap_region(img_player_R, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, 0);
+                        al_draw_bitmap_region(img_player_walking, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                     }
 
                     /* Player pulando */
-                    if(++jumping.frameCount >= jumping.frameDelay)
+                    if(jump)
                     {
-                        if(++jumping.curFrame >= jumping.maxFrame)
+                        if(++jumping.frameCount >= jumping.frameDelay)
                         {
-                            jumping.curFrame = 0;
+                            if(++jumping.curFrame >= jumping.maxFrame)
+                            {
+                                jumping.curFrame = 0;
+                            }
+                            jumping.frameCount = 0;
                         }
-                        jumping.frameCount = 0;
-                    }
 
-                    if(jump == true && playerDirection == 1)
-                    {
-                        al_draw_bitmap_region(img_player_jump_L, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, 0);
+                        if(jump == true && playerDirection == -1)
+                        {
+                            al_draw_bitmap_region(img_player_jump, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
+                        }
+                        else if(jump == true && playerDirection == 1)
+                        {
+                            al_draw_bitmap_region(img_player_jump, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, 0);
+                        }
+
                     }
-                    else if(jump == true && playerDirection == -1)
+                }
+                /* Desenho dos projeteis */
+
+                for(i=0; i<NUM_BULLET; i++)
+                {
+                    if(playerBullet[i].live)
                     {
-                        al_draw_bitmap_region(img_player_jump_R, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, 0);
+                        al_draw_bitmap(img_player_bullet, playerBullet[i].x - cameraX, playerBullet[i].y - cameraY, 0);
                     }
                 }
                 /* Troca o display */
@@ -397,16 +477,15 @@ int main()
     al_destroy_timer(timer);
     al_destroy_bitmap(background_0.image);
     al_destroy_bitmap(img_block);
-    al_destroy_bitmap(img_player_R);
-    al_destroy_bitmap(img_player_L);
-    al_destroy_bitmap(img_player_immobile_R);
-    al_destroy_bitmap(img_player_immobile_L);
-    al_destroy_bitmap(img_player_jump_R);
-    al_destroy_bitmap(img_player_jump_L);
+    al_destroy_bitmap(img_player_walking);
+    al_destroy_bitmap(img_player_immobile);
+    al_destroy_bitmap(img_player_jump);
+    al_destroy_bitmap(img_player_bullet);
     /*#al_destroy_bitmap(img_enemy1);*/
     /*#al_destroy_bitmap(img_enemy_bullet);*/
     al_destroy_sample(spl_theme);
-    /*#al_destroy_sample(spl_playerShoot);*/
+    al_destroy_sample(spl_playerShoot);
+    al_destroy_sample(spl_mlk);
 
     return 0;
 }

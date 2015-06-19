@@ -1,12 +1,10 @@
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-|| Pedro dos Santos Guerreiro e Thyago Augusto Reboledo                                                                ||
+||Pedro dos Santos Guerreiro                                                                                           ||
+||Thyago Augusto Reboledo                                                                                              ||
 || projetoHeader.h                                                                                                     ||
-|| Versão 1.0.0 (30/05/2015)                                                                                           ||
-|| Versão 1.0.1 (02/06/2015)                                                                                           ||
-|| Versão 1.0.2 (08/06/2015)                                                                                           ||
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-/*# -> os comentários que tiverem isso ainda estão em desenvolvimento */
+/*# -> os comentarios que tiverem isso ainda estao em desenvolvimento */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,15 +34,16 @@ bool jump = false;
 int gravity = 10;
 float force = 0;
 
-const int PLAYERBULLET_MAX = 3;
-const int ENEMYBULLET_MAX = 3;
 const int ENEMY_MAX = 20;
-int enemyBulletCount = 0;
-int enemyBulletID = 0;
+const int NUM_BULLET = 3;
 
-int playerDirection = -1; /* -1 = Direita, 1 = Esquerda */
+int playerDirection = 1; /* -1 = Esquerda, 1 = Direita */
 int playerLife = 100;
 int scores = 0;
+
+int i=0;
+int j=0;
+int k=0;
 
 enum
 {
@@ -70,7 +69,7 @@ int mapa[15][20] =
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 };
@@ -83,6 +82,19 @@ typedef struct
     int y;
     bool live;
 } s_object;
+
+typedef struct
+{
+    int x;
+    int y;
+    int ID;
+    int speed;
+    int direction;
+
+    bool live;
+
+    ALLEGRO_BITMAP* image;
+} s_bullet;
 
 typedef struct
 {
@@ -105,7 +117,7 @@ typedef struct
     int frameHeight;
 } s_animation;
 
-/* ------------------------------Funções------------------------------ */
+/* ------------------------------Funcoes------------------------------ */
 
 /* ~~~~~~~~~~~~~~~~~~~~Background~~~~~~~~~~~~~~~~~~~~ */
 
@@ -120,20 +132,31 @@ void drawnBackground(s_background *bkg)
 }
 /* ~~~~~~~~~~~~~~~~~~~~Shoots~~~~~~~~~~~~~~~~~~~~ */
 
-void playerShoot(s_object *player, s_object *bullet, ALLEGRO_SAMPLE *spl)
+void playerShoot(s_object *player, s_bullet *bullet, ALLEGRO_SAMPLE_INSTANCE *instance_spl)
 {
     if(!bullet->live)
     {
-        bullet->live = true;
-        bullet->x = player->x + 12;
-        bullet->y = player->y - 8;
-        al_play_sample(spl, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
+        if(playerDirection == -1)
+        {
+            bullet->live = true;
+            bullet->x = player->x - 8;
+            bullet->y = player->y + 20;
+            al_play_sample_instance(instance_spl);
+        }
+        if(playerDirection == 1)
+        {
+            bullet->live = true;
+            bullet->x = player->x + 40;
+            bullet->y = player->y + 20;
+            al_play_sample_instance(instance_spl);
+        }
+
     }
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~Colisões~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~Colisoes~~~~~~~~~~~~~~~~~~~~ */
 
-void collision_player_wall(s_object *player, ALLEGRO_BITMAP* img_block)
+void collision_player_wall(s_object *player, s_animation *jumping, ALLEGRO_BITMAP* img_block)
 {
     if (player->x < al_get_bitmap_width(img_block))
     {
@@ -151,17 +174,22 @@ void collision_player_wall(s_object *player, ALLEGRO_BITMAP* img_block)
     {
         player->y = WORLD_H - (al_get_bitmap_height(img_block)+40);
         jump = false;
+        jumping->curFrame = 0;
     }
 }
 
-void collision_player_tiles(s_object *player, s_object *block, ALLEGRO_BITMAP* img_block)
+void collision_bullet_tiles(s_bullet *bullet, s_object *block, ALLEGRO_BITMAP* img_bullet,ALLEGRO_BITMAP* img_block)
 {
-    if(player->x < block->x + al_get_bitmap_width(img_block) && block->x < player->x + 40 && player->y < block->y + al_get_bitmap_height(img_block) && block->y < player->y + 40 && block->live && playerDirection == 1)
+    if(bullet->x < block->x + al_get_bitmap_width(img_block) && block->x < bullet->x + al_get_bitmap_width(img_bullet) && bullet->y < block->y + al_get_bitmap_height(img_block) && block->y < bullet->y + al_get_bitmap_height(img_bullet) && block->live && bullet->live)
     {
-        player->x = block->x + al_get_bitmap_width(img_block);
+        bullet->live = false;
     }
-    else if(player->x < block->x + al_get_bitmap_width(img_block) && block->x < player->x + 40 && player->y < block->y + al_get_bitmap_height(img_block) && block->y < player->y + 40 && block->live && playerDirection == -1)
+    if(bullet->x > SCREEN_W + cameraX)
     {
-        player->x = block->x - 40;
+        bullet->live = false;
+    }
+    if(bullet->x < 0 + cameraX)
+    {
+        bullet->live = false;
     }
 }
