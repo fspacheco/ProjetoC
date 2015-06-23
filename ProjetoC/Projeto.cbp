@@ -13,14 +13,14 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="C:/allegro/include" />
+					<Add directory="C:/allegro5/include" />
 				</Compiler>
 				<ResourceCompiler>
 					<Add directory="C:/MinGW/include" />
 				</ResourceCompiler>
 				<Linker>
-					<Add library="C:\allegro\lib\liballegro-5.0.10-monolith-mt.a" />
-					<Add directory="C:/allegro/lib" />
+					<Add library="C:\allegro5\lib\liballegro-5.0.10-monolith-mt.a" />
+					<Add directory="C:/allegro5/lib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -38,14 +38,14 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add directory="C:/allegro/include" />
+			<Add directory="C:/allegro5/include" />
 		</Compiler>
 		<ResourceCompiler>
 			<Add directory="C:/MinGW/include" />
 		</ResourceCompiler>
 		<Linker>
-			<Add library="C:\allegro\lib\liballegro-5.0.10-monolith-mt.a" />
-			<Add directory="C:/allegro/lib" />
+			<Add library="C:\allegro5\lib\liballegro-5.0.10-monolith-mt.a" />
+			<Add directory="C:/allegro5/lib" />
 		</Linker>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />

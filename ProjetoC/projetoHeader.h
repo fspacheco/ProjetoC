@@ -21,16 +21,18 @@
 const int WORLD_W = 1280;
 const int WORLD_H = 720;
 
-const int SCREEN_W = 640;
-const int SCREEN_H = 400;
+const int SCREEN_W = 1280;
+const int SCREEN_H = 720;
 
 int cameraX = 0;
 int cameraY = 0;
 
-const int LINHA_MAX = 15;
+const int LINHA_MAX = 45;
 const int COLUNA_MAX = 20;
 
 bool jump = false;
+bool falling = false;
+
 int gravity = 10;
 float force = 0;
 
@@ -55,8 +57,9 @@ enum
 
 bool keys[KEY_MAX];
 
-int mapa[15][20] =
+int mapa[45][20] =
 {
+    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
@@ -69,8 +72,37 @@ int mapa[15][20] =
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-    {1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+    {1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 };
 
@@ -175,6 +207,28 @@ void collision_player_wall(s_object *player, s_animation *jumping, ALLEGRO_BITMA
         player->y = WORLD_H - (al_get_bitmap_height(img_block)+40);
         jump = false;
         jumping->curFrame = 0;
+    }
+}
+
+void collision_player_tiles(s_object *player, s_object *block, s_animation *jumping, ALLEGRO_BITMAP* img_block)
+{
+    if(player->y < block->y + al_get_bitmap_height(img_block) && player->y > block->y && player->x + 35 > block->x && player->x < block->x + al_get_bitmap_width(img_block) - 5)
+    {
+        player->y = block->y + al_get_bitmap_height(img_block);
+    }
+    if(player->y + 40 > block->y && player->y + 40 < block->y + al_get_bitmap_height(img_block) && player->x + 35 > block->x && player->x < block->x + al_get_bitmap_width(img_block) - 5)
+    {
+        player->y = block->y - 40;
+        jump = false;
+        jumping->curFrame = 0;
+    }
+    if (player->x + 40 > block->x && player->x + 40 < block->x + al_get_bitmap_width(img_block) && player->y + 40 > block->y && player->y < block->y + al_get_bitmap_height(img_block))
+    {
+        player->x = block->x - 40;
+    }
+    if(player->x > block->x && player->x + 5 < block->x + al_get_bitmap_width(img_block) && player->y + 40 > block->y && player->y < block->y + al_get_bitmap_height(img_block))
+    {
+        player->x = block->x + al_get_bitmap_width(img_block) - 5;
     }
 }
 
