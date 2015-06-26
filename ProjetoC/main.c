@@ -21,6 +21,7 @@
 
 int main()
 {
+
     bool quit = false;
     int gamestate = 0;
     srand(time(NULL));
@@ -57,27 +58,34 @@ int main()
     {
         for(j = 0; j<COLUNA_MAX; j++)
         {
-            /* Cria os Blocos */
-            if(mapa[i][j] == 1)
-            {
-                block[i][j].y = i*16;
-                block[i][j].x = j*64;
-                block[i][j].live = true;
-            }
-            if(mapa[i][j] == 2)
-            {
-                block[i][j].y = i*16;
-                block[i][j].x = j*64;
-                block[i][j].live = true;
-            }
             /* Cria o player */
-            if(mapa[i][j] == 3)
+            if(mapa[i][j] == 1)
             {
                 player.y = i*16 + 8; /* O "+8" eh por causa do tamanho da img do player (40x40) em comparacao ao tamanho do bloco (64x48) */
                 player.x = j*64;
                 player.live = true;
                 block[i][j].live = false;
             }
+            /* Cria os Blocos */
+            if(mapa[i][j] == 2)
+            {
+                block[i][j].y = i*16;
+                block[i][j].x = j*64;
+                block[i][j].live = true;
+            }
+            if(mapa[i][j] == 3)
+            {
+                block[i][j].y = i*16;
+                block[i][j].x = j*64;
+                block[i][j].live = true;
+            }
+            if(mapa[i][j] == 4)
+            {
+                block[i][j].y = i*16;
+                block[i][j].x = j*64;
+                block[i][j].live = false;
+            }
+
         }
     }
 
@@ -305,8 +313,13 @@ int main()
                     if(al_get_sample_instance_playing(instance_mlk))
                     {
                         al_stop_sample_instance(instance_mlk);
-                        break;
                     }
+                    break;
+                case ALLEGRO_KEY_1:
+                    {
+                        trap = 1;
+                    }
+                    break;
                 }
             }
 
@@ -329,7 +342,6 @@ int main()
                 if(ev.timer.source == timer)
                 {
                     /* Posicionamento do player*/
-
                     player.y-=force;
 
                     if(keys[KEY_RIGHT])
@@ -379,15 +391,25 @@ int main()
                     {
                         for(j = 0; j<COLUNA_MAX; j++)
                         {
-                            if(mapa[i][j] == 1)
+                            if(mapa[i][j] == 2 && block[i][j].live == true)
                             {
                                 for(k=0; k<NUM_BULLET; k++)
                                 {
                                     collision_bullet_tiles(&playerBullet[k], &block[i][j], img_player_bullet, img_block1);
                                 }
                             }
-                            if(mapa[i][j] == 2)
+                            if(mapa[i][j] == 3 && block[i][j].live == true)
                             {
+                                check_trap(&block[i][j], trap, i);
+                                collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
+                                for(k=0; k<NUM_BULLET; k++)
+                                {
+                                    collision_bullet_tiles(&playerBullet[k], &block[i][j], img_player_bullet, img_block2);
+                                }
+                            }
+                            if(mapa[i][j] == 4 && block[i][j].live == true)
+                            {
+                                check_trap(&block[i][j], trap, i);
                                 collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
                                 for(k=0; k<NUM_BULLET; k++)
                                 {
@@ -407,12 +429,18 @@ int main()
                     {
                         for(j = 0; j<COLUNA_MAX; j++)
                         {
-                            if(mapa[i][j] == 1)
+                            if(mapa[i][j] == 2 && block[i][j].live == true)
                             {
                                 al_draw_bitmap(img_block1, block[i][j].x - cameraX, block[i][j].y - cameraY, 0);
                             }
-                            if(mapa[i][j] == 2)
+                            if(mapa[i][j] == 3 && block[i][j].live == true)
                             {
+                                check_trap(&block[i][j], trap, i);
+                                al_draw_bitmap(img_block2, block[i][j].x - cameraX, block[i][j].y - cameraY, 0);
+                            }
+                            if(mapa[i][j] == 4 && block[i][j].live == true)
+                            {
+                                check_trap(&block[i][j], trap, i);
                                 al_draw_bitmap(img_block2, block[i][j].x - cameraX, block[i][j].y - cameraY, 0);
                             }
                         }
@@ -448,11 +476,11 @@ int main()
                         walking.frameCount = 0;
                     }
 
-                    if(jump == false && keys[KEY_LEFT] && playerDirection == -1 && player.x != 64)
+                    if(jump == false && keys[KEY_LEFT] && playerDirection == -1)
                     {
                         al_draw_bitmap_region(img_player_walking, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
                     }
-                    else if(jump == false && keys[KEY_RIGHT] && playerDirection == 1 && player.x != WORLD_W - (64+walking.frameWidth))
+                    else if(jump == false && keys[KEY_RIGHT] && playerDirection == 1)
                     {
                         al_draw_bitmap_region(img_player_walking, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                     }
