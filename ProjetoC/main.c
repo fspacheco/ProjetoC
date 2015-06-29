@@ -31,13 +31,14 @@ int main()
     ALLEGRO_EVENT_QUEUE*        event_queue;
     ALLEGRO_EVENT               ev;
 
+    ALLEGRO_BITMAP*             img_home_screen;
     ALLEGRO_BITMAP*             img_block1;
     ALLEGRO_BITMAP*             img_block2;
     ALLEGRO_BITMAP*             img_player_walking;
     ALLEGRO_BITMAP*             img_player_immobile;
     ALLEGRO_BITMAP*             img_player_jump;
     ALLEGRO_BITMAP*             img_player_bullet;
-    /*#ALLEGRO_BITMAP*             img_enemy1;*/
+    ALLEGRO_BITMAP*             img_enemy1;
     /*#ALLEGRO_BITMAP*             img_enemy_bullet;*/
 
     ALLEGRO_SAMPLE*             spl_theme;
@@ -53,17 +54,23 @@ int main()
     /* Estruturas */
     s_object player;
     s_object block[LINHA_MAX][COLUNA_MAX];
+    s_object enemy1[LINHA_MAX][COLUNA_MAX];
 
-    for (i = 0; i<LINHA_MAX; i++)
+    for (i=0; i<LINHA_MAX; i++)
     {
-        for(j = 0; j<COLUNA_MAX; j++)
+        for(j=0; j<COLUNA_MAX; j++)
         {
             /* Cria o player */
             if(mapa[i][j] == 1)
             {
-                player.y = i*16 + 8; /* O "+8" eh por causa do tamanho da img do player (40x40) em comparacao ao tamanho do bloco (64x48) */
-                player.x = j*64;
+                player.y = i*16 - 24; /* O "+8" eh por causa do tamanho da img do player (40x40) em comparacao ao tamanho do bloco (64x16) */
+                player.x = j*64 + 24;
+                player.speed = 3;
+                player.direction = 1;
+
                 player.live = true;
+                player.life = 100;
+
                 block[i][j].live = false;
             }
             /* Cria os Blocos */
@@ -83,19 +90,70 @@ int main()
             {
                 block[i][j].y = i*16;
                 block[i][j].x = j*64;
+                block[i][j].live = true;
+            }
+            if(mapa[i][j] == 5)
+            {
+                block[i][j].y = i*16;
+                block[i][j].x = j*64;
                 block[i][j].live = false;
             }
+            if(mapa[i][j] == 6)
+            {
+                block[i][j].y = i*16;
+                block[i][j].x = j*64;
+                block[i][j].live = false;
+            }
+            if(mapa[i][j] == 7)
+            {
+                enemy1[i][j].y = i*16 - 24;
+                enemy1[i][j].x = j*64;
+                enemy1[i][j].speed = 2;
+                enemy1[i][j].direction = 1;
 
+                enemy1[i][j].life = 3;
+                enemy1[i][j].live = true;
+
+                block[i][j].live = false;
+            }
+            if(mapa[i][j] == 8)
+            {
+                enemy1[i][j].y = i*16 - 24;
+                enemy1[i][j].x = j*64;
+                enemy1[i][j].speed = 2;
+                enemy1[i][j].direction = 1;
+
+                enemy1[i][j].life = 3;
+                enemy1[i][j].live = false;
+
+                block[i][j].live = false;
+            }
+            if(mapa[i][j] == 9)
+            {
+                enemy1[i][j].y = i*16 - 24;
+                enemy1[i][j].x = j*64;
+                enemy1[i][j].speed = 2;
+                enemy1[i][j].direction = 1;
+
+                enemy1[i][j].life = 3;
+                enemy1[i][j].live = false;
+
+                block[i][j].live = false;
+            }
+            if(mapa[i][j] == 10)
+            {
+                enemy1[i][j].y = i*16 - 24;
+                enemy1[i][j].x = j*64;
+                enemy1[i][j].speed = 2;
+                enemy1[i][j].direction = -1;
+
+                enemy1[i][j].life = 3;
+                enemy1[i][j].live = false;
+
+                block[i][j].live = false;
+            }
         }
     }
-
-    /*#s_object enemy[ENEMY_MAX];
-    for (i=0; i<ENEMY_MAX; i++)
-    {
-        enemy[i].x = ;
-        enemy[i].y = ;
-        enemy[i].live = false;
-    }*/
 
     s_bullet playerBullet[NUM_BULLET];
     for(i=0; i<NUM_BULLET; i++)
@@ -139,6 +197,14 @@ int main()
     immobile.frameHeight = 40;
     immobile.frameWidth = 40;
 
+    s_animation anim_enemy1;
+    anim_enemy1.maxFrame = 3;
+    anim_enemy1.frameDelay = 15;
+    anim_enemy1.frameCount = 0;
+    anim_enemy1.curFrame = 0;
+    anim_enemy1.frameHeight = 40;
+    anim_enemy1.frameWidth = 40;
+
     /* Faz com que as teclas comecem em false */
     for(i=0; i<KEY_MAX; i++)
     {
@@ -179,6 +245,7 @@ int main()
     }
 
     /* Carregando as Imagens */
+    img_home_screen = al_load_bitmap("Sprites/Background/home_screen.png");
     background_0.image = al_load_bitmap("Sprites/Background/background_h1n1.png");
     img_block1 = al_load_bitmap("Sprites/block1.png");
     img_block2 = al_load_bitmap("Sprites/block2.png");
@@ -186,7 +253,7 @@ int main()
     img_player_immobile = al_load_bitmap("Sprites/Player/player_immobile.png");
     img_player_jump = al_load_bitmap("Sprites/Player/player_jump.png");
     img_player_bullet = al_load_bitmap("Sprites/Player/player_bullet.png");
-    /*#img_enemy = al_load_bitmap("Sprites/Enemies/enemy_h1n1.png");*/
+    img_enemy1 = al_load_bitmap("Sprites/Enemies/enemy_h1n1.png");
 
     /* Carregando os Samples */
     al_reserve_samples(10);
@@ -244,7 +311,7 @@ int main()
                 if(ev.timer.source == timer)
                 {
                     al_clear_to_color(al_map_rgb(0,0,0));
-                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2, ALLEGRO_ALIGN_CENTER, "Press Space to Play!");
+                    al_draw_bitmap(img_home_screen, 0, 0, 0);
                     al_flip_display();
                 }
             }
@@ -315,11 +382,6 @@ int main()
                         al_stop_sample_instance(instance_mlk);
                     }
                     break;
-                case ALLEGRO_KEY_1:
-                    {
-                        trap = 1;
-                    }
-                    break;
                 }
             }
 
@@ -346,13 +408,13 @@ int main()
 
                     if(keys[KEY_RIGHT])
                     {
-                        playerDirection=1;
-                        player.x+=2;
+                        player.direction=1;
+                        player.x+=player.speed;
                     }
                     if(keys[KEY_LEFT])
                     {
-                        playerDirection=-1;
-                        player.x-=2;
+                        player.direction=-1;
+                        player.x-=player.speed;
                     }
 
                     /* Posicionamento do projetil*/
@@ -360,7 +422,7 @@ int main()
                     {
                         if(!playerBullet[i].live)
                         {
-                            playerBullet[i].direction = playerDirection;
+                            playerBullet[i].direction = player.direction;
                         }
 
                         if(playerBullet[i].live)
@@ -386,34 +448,88 @@ int main()
                     if (cameraX > WORLD_W - SCREEN_W) cameraX = WORLD_W - SCREEN_W;
                     if (cameraY > WORLD_H - SCREEN_H) cameraY = WORLD_H - SCREEN_H;
 
-                    /* Colisoes */
+                    /* Colisoes + check trap */
                     for (i = 0; i<LINHA_MAX; i++)
                     {
                         for(j = 0; j<COLUNA_MAX; j++)
                         {
-                            if(mapa[i][j] == 2 && block[i][j].live == true)
+                            if(block[i][j].live == true)
                             {
-                                for(k=0; k<NUM_BULLET; k++)
+
+                                if(mapa[i][j] == 2)
                                 {
-                                    collision_bullet_tiles(&playerBullet[k], &block[i][j], img_player_bullet, img_block1);
+                                    collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
                                 }
-                            }
-                            if(mapa[i][j] == 3 && block[i][j].live == true)
-                            {
-                                check_trap(&block[i][j], trap, i);
-                                collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
+                                if(mapa[i][j] == 3)
+                                {
+                                    collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
+                                }
+                                if(mapa[i][j] == 4)
+                                {
+                                    check_trap(&player, &block[i][j], &enemy1[i][j], 4);
+                                    collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
+                                }
+                                if(mapa[i][j] == 5)
+                                {
+                                    collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
+                                }
+                                if(mapa[i][j] == 6)
+                                {
+                                    collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
+                                }
                                 for(k=0; k<NUM_BULLET; k++)
                                 {
                                     collision_bullet_tiles(&playerBullet[k], &block[i][j], img_player_bullet, img_block2);
                                 }
                             }
-                            if(mapa[i][j] == 4 && block[i][j].live == true)
+                            if(block[i][j].live == false)
                             {
-                                check_trap(&block[i][j], trap, i);
-                                collision_player_tiles(&player, &block[i][j], &jumping, img_block2);
-                                for(k=0; k<NUM_BULLET; k++)
+                                if(mapa[i][j] == 5)
                                 {
-                                    collision_bullet_tiles(&playerBullet[k], &block[i][j], img_player_bullet, img_block2);
+                                    check_trap(&player, &block[i][j], &enemy1[i][j], 5);
+                                }
+                                if(mapa[i][j] == 6)
+                                {
+                                    check_trap(&player, &block[i][j], &enemy1[i][j], 6);
+                                }
+                                if(mapa[i][j] == 7)
+                                {
+                                    collision_player_enemy(&player, &enemy1[i][j], 40, 40);
+
+                                    for(k=0; k<NUM_BULLET; k++)
+                                    {
+                                        collision_bullet_enemy(&playerBullet[k], &enemy1[i][j], img_player_bullet, 40, 40);
+                                    }
+                                }
+                                if(mapa[i][j] == 8)
+                                {
+                                    check_trap(&player, &block[i][j], &enemy1[i][j], 8);
+                                    collision_player_enemy(&player, &enemy1[i][j], 40, 40);
+
+                                    for(k=0; k<NUM_BULLET; k++)
+                                    {
+                                        collision_bullet_enemy(&playerBullet[k], &enemy1[i][j], img_player_bullet, 40, 40);
+                                    }
+                                }
+                                if(mapa[i][j] == 9)
+                                {
+                                    check_trap(&player, &block[i][j], &enemy1[i][j], 9);
+                                    collision_player_enemy(&player, &enemy1[i][j], 40, 40);
+
+                                    for(k=0; k<NUM_BULLET; k++)
+                                    {
+                                        collision_bullet_enemy(&playerBullet[k], &enemy1[i][j], img_player_bullet, 40, 40);
+                                    }
+                                }
+                                if(mapa[i][j] == 10)
+                                {
+                                    check_trap(&player, &block[i][j], &enemy1[i][j], 10);
+                                    collision_player_enemy(&player, &enemy1[i][j], 40, 40);
+
+                                    for(k=0; k<NUM_BULLET; k++)
+                                    {
+                                        collision_bullet_enemy(&playerBullet[k], &enemy1[i][j], img_player_bullet, 40, 40);
+                                    }
                                 }
                             }
                         }
@@ -421,10 +537,20 @@ int main()
 
                     collision_player_wall(&player, &jumping, img_block1);
 
-                    /* Desenha o Background */
+                    /* ~~Desenha o Background~~ */
                     drawnBackground(&background_0);
 
-                    /* Desenha os Blocos */
+                    /* ~~Animação dos inimigos~~ */
+                    if(++anim_enemy1.frameCount >= anim_enemy1.frameDelay)
+                    {
+                        if(++anim_enemy1.curFrame >= anim_enemy1.maxFrame)
+                        {
+                            anim_enemy1.curFrame = 0;
+                        }
+                        anim_enemy1.frameCount = 0;
+                    }
+
+                    /* ~~Desenha os Blocos/Inimigos~~ */
                     for (i = 0; i<LINHA_MAX; i++)
                     {
                         for(j = 0; j<COLUNA_MAX; j++)
@@ -435,18 +561,24 @@ int main()
                             }
                             if(mapa[i][j] == 3 && block[i][j].live == true)
                             {
-                                check_trap(&block[i][j], trap, i);
                                 al_draw_bitmap(img_block2, block[i][j].x - cameraX, block[i][j].y - cameraY, 0);
                             }
                             if(mapa[i][j] == 4 && block[i][j].live == true)
                             {
-                                check_trap(&block[i][j], trap, i);
                                 al_draw_bitmap(img_block2, block[i][j].x - cameraX, block[i][j].y - cameraY, 0);
+                            }
+                            if(mapa[i][j] == 5 && block[i][j].live == true)
+                            {
+                                al_draw_bitmap(img_block2, block[i][j].x - cameraX, block[i][j].y - cameraY, 0);
+                            }
+                            if((mapa[i][j] == 7 || mapa[i][j] == 8 || mapa[i][j] == 9 || mapa[i][j] == 10) && enemy1[i][j].live == true)
+                            {
+                                al_draw_bitmap_region(img_enemy1, anim_enemy1.curFrame * anim_enemy1.frameWidth, 0, anim_enemy1.frameWidth, anim_enemy1.frameHeight, enemy1[i][j].x - cameraX, enemy1[i][j].y - cameraY, 0);
                             }
                         }
                     }
 
-                    /* Desenho do player */
+                    /* ~~Desenho do player~~ */
 
                     /* Player parado */
                     if(++immobile.frameCount >= immobile.frameDelay)
@@ -457,11 +589,11 @@ int main()
                         }
                         immobile.frameCount = 0;
                     }
-                    if(jump == false && ((!keys[KEY_LEFT] && playerDirection == -1) || player.x == 64))
+                    if(jump == false && ((!keys[KEY_LEFT] && player.direction == -1) || player.x == 64))
                     {
                         al_draw_bitmap_region(img_player_immobile, immobile.curFrame * immobile.frameWidth, 0, immobile.frameWidth, immobile.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
                     }
-                    else if(jump == false && ((!keys[KEY_RIGHT] && playerDirection == 1) || player.x == WORLD_W - (64+immobile.frameWidth)))
+                    else if(jump == false && ((!keys[KEY_RIGHT] && player.direction == 1) || player.x == WORLD_W - (64-immobile.frameWidth)))
                     {
                         al_draw_bitmap_region(img_player_immobile, immobile.curFrame * immobile.frameWidth, 0, immobile.frameWidth, immobile.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                     }
@@ -476,11 +608,11 @@ int main()
                         walking.frameCount = 0;
                     }
 
-                    if(jump == false && keys[KEY_LEFT] && playerDirection == -1)
+                    if(jump == false && keys[KEY_LEFT] && player.direction == -1)
                     {
                         al_draw_bitmap_region(img_player_walking, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
                     }
-                    else if(jump == false && keys[KEY_RIGHT] && playerDirection == 1)
+                    else if(jump == false && keys[KEY_RIGHT] && player.direction == 1)
                     {
                         al_draw_bitmap_region(img_player_walking, walking.curFrame * walking.frameWidth, 0, walking.frameWidth, walking.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                     }
@@ -497,11 +629,11 @@ int main()
                             jumping.frameCount = 0;
                         }
 
-                        if(playerDirection == -1)
+                        if(player.direction == -1)
                         {
                             al_draw_bitmap_region(img_player_jump, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
                         }
-                        else if(playerDirection == 1)
+                        else if(player.direction == 1)
                         {
                             al_draw_bitmap_region(img_player_jump, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                         }
@@ -521,18 +653,18 @@ int main()
                         jumping.frameCount = 0;
                     }
 
-                    if(playerDirection == -1)
+                    if(player.direction == -1)
                     {
                         al_draw_bitmap_region(img_player_jump, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, ALLEGRO_FLIP_HORIZONTAL);
                     }
-                    else if(playerDirection == 1)
+                    else if(player.direction == 1)
                     {
                         al_draw_bitmap_region(img_player_jump, jumping.curFrame * jumping.frameWidth, 0, jumping.frameWidth, jumping.frameHeight, player.x - cameraX, player.y - cameraY, 0);
                     }
 
                 }
 
-                /* Desenho dos projeteis */
+                /* ~~Desenho dos projeteis~~ */
 
                 for(i=0; i<NUM_BULLET; i++)
                 {
@@ -541,15 +673,83 @@ int main()
                         al_draw_bitmap(img_player_bullet, playerBullet[i].x - cameraX, playerBullet[i].y - cameraY, 0);
                     }
                 }
+
+                /* Termino da Fase */
+                if(enemyKilled == ENEMY_MAX) /* You Win! */
+                {
+                    gamestate = 2;
+                }
+                if(player.life <= 0) /* Game Over! */
+                {
+                    gamestate = 3;
+                }
+
                 /* Troca o display */
                 al_flip_display();
             }
+            break;
+        case 2:
+            al_wait_for_event(event_queue, &ev);
+
+            if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) /* Faz com que o jogo feche ao clicar no botao "X" do display */
+            {
+                quit = true;
+            }
+
+            if(ev.type == ALLEGRO_EVENT_KEY_DOWN)
+            {
+                if(ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) /* Faz com que o jogo feche ao pressionar esc */
+                {
+                    quit = true;
+                }
+            }
+            if(ev.type == ALLEGRO_EVENT_TIMER) /* Mostrar mensagens na tela */
+            {
+                if(ev.timer.source == timer)
+                {
+                    al_clear_to_color(al_map_rgb(0,0,0));
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2 - 32, ALLEGRO_ALIGN_CENTER, "You Win!");
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2, ALLEGRO_ALIGN_CENTER, "Scores: %d", scores);
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2 + 32, ALLEGRO_ALIGN_CENTER, "Press esc to exit");
+                    al_flip_display();
+                }
+            }
+            break;
+
+        case 3:
+            al_wait_for_event(event_queue, &ev);
+
+            if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) /* Faz com que o jogo feche ao clicar no botao "X" do display */
+            {
+                quit = true;
+            }
+
+            if(ev.type == ALLEGRO_EVENT_KEY_DOWN)
+            {
+                if(ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) /* Faz com que o jogo feche ao pressionar esc */
+                {
+                    quit = true;
+                }
+            }
+            if(ev.type == ALLEGRO_EVENT_TIMER) /* Mostrar mensagens na tela */
+            {
+                if(ev.timer.source == timer)
+                {
+                    al_clear_to_color(al_map_rgb(0,0,0));
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2 - 32, ALLEGRO_ALIGN_CENTER, "Game Over!");
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2, ALLEGRO_ALIGN_CENTER, "Scores: %d", scores);
+                    al_draw_textf(fonte, al_map_rgb(255, 255, 255), SCREEN_W/2, SCREEN_H/2 + 32, ALLEGRO_ALIGN_CENTER, "Press esc to exit");
+                    al_flip_display();
+                }
+            }
+            break;
         }
     }
     /* Destruindo as variaveis */
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
     al_destroy_timer(timer);
+    al_destroy_bitmap(img_home_screen);
     al_destroy_bitmap(background_0.image);
     al_destroy_bitmap(img_block1);
     al_destroy_bitmap(img_block2);
@@ -557,7 +757,7 @@ int main()
     al_destroy_bitmap(img_player_immobile);
     al_destroy_bitmap(img_player_jump);
     al_destroy_bitmap(img_player_bullet);
-    /*#al_destroy_bitmap(img_enemy1);*/
+    al_destroy_bitmap(img_enemy1);
     /*#al_destroy_bitmap(img_enemy_bullet);*/
     al_destroy_sample(spl_theme);
     al_destroy_sample(spl_playerShoot);

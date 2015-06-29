@@ -21,8 +21,8 @@
 const int WORLD_W = 1280;
 const int WORLD_H = 720;
 
-const int SCREEN_W = 1280;
-const int SCREEN_H = 720;
+const int SCREEN_W = 640;
+const int SCREEN_H = 400;
 
 int cameraX = 0;
 int cameraY = 0;
@@ -36,13 +36,12 @@ bool falling = false;
 int gravity = 10;
 float force = 0;
 
-const int ENEMY_MAX = 20;
+const int ENEMY_MAX = 35;
 const int NUM_BULLET = 3;
 
 int trap =0;
 
-int playerDirection = 1; /* -1 = Esquerda, 1 = Direita */
-int playerLife = 100;
+int enemyKilled = 0;
 int scores = 0;
 
 int i=0;
@@ -63,48 +62,48 @@ int mapa[45][20] =
 {
     {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
     {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
-    {2,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,2},
+    {2,0,9,0,9,0,9,0,9,0,9,0,9,0,9,0,9,0,0,2},
+    {2,0,5,0,5,0,5,0,5,0,5,0,5,0,5,0,5,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,9,0,9,0,9,0,9,0,9,0,9,0,9,0,9,0,2},
+    {2,0,0,5,0,5,0,5,0,5,0,5,0,5,0,5,0,5,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,9,0,9,0,9,0,9,0,9,0,9,0,9,0,9,0,0,2},
+    {2,0,5,0,5,0,5,0,5,0,5,0,5,0,5,0,5,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,4,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2},
+    {2,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,6,6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,2},
-    {2,0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2},
+    {2,0,0,0,0,7,0,0,0,7,0,0,0,7,0,0,5,7,0,2},
+    {2,0,0,0,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4,2},
     {2,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,4,2},
+    {2,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2},
     {2,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
     {2,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
-    {2,1,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2},
+    {2,1,0,3,8,0,8,0,8,0,8,0,8,0,8,0,0,0,0,2},
     {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2},
 };
 
@@ -114,6 +113,11 @@ typedef struct
 {
     int x;
     int y;
+    int direction;
+
+    float speed;
+
+    int life;
     bool live;
 } s_object;
 
@@ -123,7 +127,7 @@ typedef struct
     int y;
     int ID;
     int speed;
-    int direction;
+    int direction; /* -1 = Esquerda, 1 = Direita */
 
     bool live;
 
@@ -170,21 +174,20 @@ void playerShoot(s_object *player, s_bullet *bullet, ALLEGRO_SAMPLE_INSTANCE *in
 {
     if(!bullet->live)
     {
-        if(playerDirection == -1)
+        if(player->direction == -1)
         {
             bullet->live = true;
             bullet->x = player->x - 8;
             bullet->y = player->y + 20;
             al_play_sample_instance(instance_spl);
         }
-        if(playerDirection == 1)
+        if(player->direction == 1)
         {
             bullet->live = true;
             bullet->x = player->x + 40;
             bullet->y = player->y + 20;
             al_play_sample_instance(instance_spl);
         }
-
     }
 }
 
@@ -236,6 +239,24 @@ void collision_player_tiles(s_object *player, s_object *block, s_animation *jump
     }
 }
 
+void collision_player_enemy(s_object *player, s_object *enemy, int enemy_width, int enemy_height)
+{
+    if(enemy->live == true)
+    {
+        if (player->x + enemy_width > enemy->x && player->x + 40 < enemy->x + enemy_width && player->y + enemy_width > enemy->y && player->y < enemy->y + enemy_height)
+        {
+            player->x = enemy->x - 40;
+            player->life--;
+
+        }
+        if(player->x > enemy->x && player->x < enemy->x + enemy_width && player->y + 40 > enemy->y && player->y < enemy->y + enemy_width)
+        {
+            player->x = enemy->x + enemy_width ;
+            player->life--;
+        }
+    }
+}
+
 void collision_bullet_tiles(s_bullet *bullet, s_object *block, ALLEGRO_BITMAP* img_bullet,ALLEGRO_BITMAP* img_block)
 {
     if(bullet->x < block->x + al_get_bitmap_width(img_block) && block->x < bullet->x + al_get_bitmap_width(img_bullet) && bullet->y < block->y + al_get_bitmap_height(img_block) && block->y < bullet->y + al_get_bitmap_height(img_bullet) && block->live && bullet->live)
@@ -252,11 +273,70 @@ void collision_bullet_tiles(s_bullet *bullet, s_object *block, ALLEGRO_BITMAP* i
     }
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~Armadilhas~~~~~~~~~~~~~~~~~~~~ */
-void check_trap(s_object *block, int armadilha, int linha)
+void collision_bullet_enemy(s_bullet *bullet, s_object *enemy, ALLEGRO_BITMAP* img_bullet, int enemy_width, int enemy_height)
 {
-    if(armadilha == 1 && linha == 36)
+    if(bullet->x < enemy->x + enemy_width && enemy->x < bullet->x + al_get_bitmap_width(img_bullet) && bullet->y < enemy->y + enemy_height && enemy->y < bullet->y + al_get_bitmap_height(img_bullet) && enemy->live && bullet->live)
+    {
+        enemy->life--;
+        if(enemy->life <= 0)
+        {
+            enemyKilled++;
+            scores+=10;
+            enemy->live = false;
+        }
+        bullet->live = false;
+    }
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~Armadilhas~~~~~~~~~~~~~~~~~~~~ */
+void check_trap(s_object *player, s_object *block, s_object *enemy, int num_mapa)
+{
+    if(enemyKilled == 4)
+    {
+        trap = 1;
+    }
+    if(enemyKilled == 10)
+    {
+        trap = 2;
+    }
+    if(enemyKilled == 34)
+    {
+        trap = 3;
+    }
+
+    if(trap == 1 && num_mapa == 4)
     {
         block->live = false;
+        trap = 0;
+    }
+    if(trap == 2 && num_mapa == 5)
+    {
+        block->live = true;
+        trap = 0;
+    }
+    if(trap == 3 && num_mapa == 6)
+    {
+        block->live = true;
+        trap = 0;
+    }
+
+
+    if(trap == 1 && num_mapa == 8)
+    {
+        enemy->live = true;
+        trap = 0;
+    }
+    if(trap == 2 && num_mapa == 9)
+    {
+        enemy->live = true;
+        trap = 0;
+    }
+    if(trap == 3 && num_mapa == 10)
+    {
+        if(player->x + 104 < enemy->x)
+        {
+            enemy->live = true;
+            trap = 0;
+        }
     }
 }
