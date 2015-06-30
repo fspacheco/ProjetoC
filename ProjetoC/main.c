@@ -156,6 +156,8 @@ int main()
     }
 
     s_bullet playerBullet[NUM_BULLET];
+    s_bullet enemyBullet[NUM_BULLET];
+
     for(i=0; i<NUM_BULLET; i++)
     {
         playerBullet[i].x = 0;
@@ -163,6 +165,12 @@ int main()
         playerBullet[i].speed = 5;
         playerBullet[i].direction = 1;
         playerBullet[i].live = false;
+
+        enemyBullet[i].x = 0;
+        enemyBullet[i].y = 0;
+        enemyBullet[i].speed = 5;
+        enemyBullet[i].direction = 1;
+        enemyBullet[i].live = false;
     }
 
     s_background background_0;
@@ -362,13 +370,7 @@ int main()
                     keys[KEY_RIGHT]=true;
                     break;
                 case ALLEGRO_KEY_SPACE:
-                    for(i=0; i<NUM_BULLET; i++)
-                    {
-                        if(!al_get_sample_instance_playing(instance_playerShoot))
-                        {
-                            playerShoot(&player, &playerBullet[i], instance_playerShoot);
-                        }
-                    }
+                    keys[KEY_SPACE]=true;
                     break;
                 case ALLEGRO_KEY_F1:
                     if(!al_get_sample_instance_playing(instance_mlk))
@@ -396,6 +398,9 @@ int main()
                 case ALLEGRO_KEY_RIGHT:
                     keys[KEY_RIGHT]=false;
                     break;
+                case ALLEGRO_KEY_SPACE:
+                    keys[KEY_SPACE]=false;
+                    break;
                 }
             }
 
@@ -416,8 +421,33 @@ int main()
                         player.direction=-1;
                         player.x-=player.speed;
                     }
+                    if(keys[KEY_SPACE])
+                    {
+                        for(i=0; i<NUM_BULLET; i++)
+                        {
+                            if(!al_get_sample_instance_playing(instance_playerShoot))
+                            {
+                                playerShoot(&player, &playerBullet[i], instance_playerShoot);
+                            }
+                        }
+                    }
 
-                    /* Posicionamento do projetil*/
+                    /* Chance do Inimigo Atirar */
+                    chance_enemy_shoot = rand() % 50;
+                    for (i=0; i<LINHA_MAX; i++)
+                    {
+                        for(j=0; j<COLUNA_MAX; j++)
+                        {
+                            for(k=0; k<NUM_BULLET; k++)
+                            {
+                                enemyShoot(&player, &enemy1[i][j], &enemyBullet[k]);
+                            }
+                        }
+                    }
+
+                    /* ~~Posicionamento do projetil~~ */
+
+                    /* Projetil do Player */
                     for(i=0; i<NUM_BULLET; i++)
                     {
                         if(!playerBullet[i].live)
@@ -434,6 +464,27 @@ int main()
                             else if(playerBullet[i].direction == 1)
                             {
                                 playerBullet[i].x+=playerBullet[i].speed;
+                            }
+                        }
+                    }
+                    /* Projetil do Inimigo */
+                    for (i=0; i<LINHA_MAX; i++)
+                    {
+                        for(j=0; j<COLUNA_MAX; j++)
+                        {
+                            for(k=0; k<NUM_BULLET; k++)
+                            {
+                                if(enemyBullet[k].live)
+                                {
+                                    if(enemyBullet[k].direction == -1)
+                                    {
+                                        enemyBullet[k].x-=enemyBullet[k].speed;
+                                    }
+                                    else if(enemyBullet[k].direction == 1)
+                                    {
+                                        enemyBullet[k].x+=enemyBullet[k].speed;
+                                    }
+                                }
                             }
                         }
                     }
@@ -671,6 +722,10 @@ int main()
                     if(playerBullet[i].live)
                     {
                         al_draw_bitmap(img_player_bullet, playerBullet[i].x - cameraX, playerBullet[i].y - cameraY, 0);
+                    }
+                    if(enemyBullet[i].live)
+                    {
+                        al_draw_filled_circle(enemyBullet[i].x - cameraX, enemyBullet[i].y - cameraY, 2, al_map_rgb(117, 15, 96));
                     }
                 }
 

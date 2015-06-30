@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_primitives.h>
@@ -39,7 +40,8 @@ float force = 0;
 const int ENEMY_MAX = 35;
 const int NUM_BULLET = 3;
 
-int trap =0;
+int trap = 0;
+int chance_enemy_shoot = 0;
 
 int enemyKilled = 0;
 int scores = 0;
@@ -53,6 +55,7 @@ enum
     KEY_RIGHT,
     KEY_LEFT,
     KEY_UP,
+    KEY_SPACE,
     KEY_MAX
 };
 
@@ -178,15 +181,44 @@ void playerShoot(s_object *player, s_bullet *bullet, ALLEGRO_SAMPLE_INSTANCE *in
         {
             bullet->live = true;
             bullet->x = player->x - 8;
-            bullet->y = player->y + 20;
+            bullet->y = player->y + 10;
             al_play_sample_instance(instance_spl);
         }
         if(player->direction == 1)
         {
             bullet->live = true;
             bullet->x = player->x + 40;
-            bullet->y = player->y + 20;
+            bullet->y = player->y + 10;
             al_play_sample_instance(instance_spl);
+        }
+    }
+}
+
+void enemyShoot(s_object *player, s_object *enemy, s_bullet *bullet)
+{
+    if(player->x > enemy->x + 40)
+    {
+        enemy->direction = 1;
+    }
+    if(player->x + 40 < enemy->x)
+    {
+        enemy->direction = -1;
+    }
+    if(player->y >= enemy->y && player->y + 35 <= enemy->y + 45 && enemy->live == true)
+    {
+        if(chance_enemy_shoot == 1 && enemy->direction == -1)
+        {
+            bullet->live = true;
+            bullet->x = enemy->x - 8;
+            bullet->y = enemy->y + 10;
+            printf("%d", enemy->direction);
+        }
+        if(chance_enemy_shoot == 1 && enemy->direction == 1)
+        {
+            bullet->live = true;
+            bullet->x = enemy->x + 40;
+            bullet->y = enemy->y + 10;
+            printf("%d", enemy->direction);
         }
     }
 }
