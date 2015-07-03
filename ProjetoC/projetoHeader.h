@@ -4,8 +4,6 @@
 ||projetoHeader.h                                                                                                      ||
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-/*# -> os comentarios que tiverem isso ainda estao em desenvolvimento */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -31,10 +29,6 @@ int cameraY = 0;
 const int LINHA_MAX = 45;
 const int COLUNA_MAX = 20;
 
-int change_bkg = 0;
-int stopwatch = 120;
-
-bool iddle = false;
 bool jump = false;
 
 int gravity = 10;
@@ -133,8 +127,6 @@ typedef struct
     int x;
     int y;
     int speed;
-    int ID;
-    int contador;
     int direction; /* -1 = Esquerda, 1 = Direita */
 
     bool live;

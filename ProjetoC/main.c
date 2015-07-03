@@ -4,8 +4,6 @@
 ||Leukocyte                                                                                                            ||
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
-/*# -> os comentarios que tiverem isso ainda estao em desenvolvimento */
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -24,6 +22,10 @@ int main()
     bool quit = false;
     int gamestate = 0;
     srand(time(NULL));
+
+    int change_bkg = 0;
+    int stopwatch = 120;
+    bool iddle = false;
 
     int bulletID=0;
     int bulletCount=0;
@@ -81,7 +83,7 @@ int main()
             /* Cria o player */
             if(mapa[i][j] == 1)
             {
-                player.y = i*16 - 24; /* O "+8" eh por causa do tamanho da img do player (40x40) em comparacao ao tamanho do bloco (64x16) */
+                player.y = i*16 - 24;
                 player.x = j*64 + 24;
                 player.speed = 3;
                 player.direction = 1;
@@ -116,6 +118,7 @@ int main()
                 block[i][j].x = j*64;
                 block[i][j].live = false;
             }
+            /* Cria os Inimigos */
             if(mapa[i][j] == 6)
             {
                 enemy1[i][j].y = i*16 - 24;
@@ -401,6 +404,7 @@ int main()
                     keys[KEY_SPACE]=true;
                     break;
                 case ALLEGRO_KEY_UP:
+                    keys[KEY_UP] = true;
                     if(jump == false)
                     {
                         jump = true;
@@ -439,6 +443,9 @@ int main()
                 case ALLEGRO_KEY_SPACE:
                     keys[KEY_SPACE]=false;
                     break;
+                case ALLEGRO_KEY_UP:
+                    keys[KEY_UP] = false;
+                    break;
                 case ALLEGRO_KEY_LEFT:
                     keys[KEY_LEFT]=false;
                     break;
@@ -466,6 +473,17 @@ int main()
                     /* Posicionamento do player*/
                     player.y-=force;
 
+                    if(keys[KEY_RIGHT])
+                    {
+                        player.direction = 1;
+                        player.x+=player.speed;
+                    }
+                    if(keys[KEY_LEFT])
+                    {
+                        player.direction = -1;
+                        player.x-=player.speed;
+                    }
+
                     if(keys[KEY_SPACE])
                     {
                         for(i=0; i<NUM_BULLET; i++)
@@ -476,16 +494,7 @@ int main()
                             }
                         }
                     }
-                    if(keys[KEY_RIGHT])
-                    {
-                        player.direction=1;
-                        player.x+=player.speed;
-                    }
-                    if(keys[KEY_LEFT])
-                    {
-                        player.direction=-1;
-                        player.x-=player.speed;
-                    }
+
 
                     /*Posicionamento do Inimigo */
 
