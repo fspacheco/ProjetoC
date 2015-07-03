@@ -35,7 +35,7 @@ int gravity = 10;
 float force = 0;
 
 const int ENEMY_MAX = 35;
-const int NUM_BULLET = 3;
+const int NUM_BULLET = 8;
 
 int trap = 0;
 int chance_enemy_shoot = 0;
