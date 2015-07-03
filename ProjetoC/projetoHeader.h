@@ -1,7 +1,7 @@
 /*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ||Pedro dos Santos Guerreiro                                                                                           ||
 ||Thyago Augusto Reboledo                                                                                              ||
-|| projetoHeader.h                                                                                                     ||
+||projetoHeader.h                                                                                                      ||
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
 /*# -> os comentarios que tiverem isso ainda estao em desenvolvimento */
@@ -36,7 +36,6 @@ int stopwatch = 120;
 
 bool iddle = false;
 bool jump = false;
-bool falling = false;
 
 int gravity = 10;
 float force = 0;
@@ -56,6 +55,7 @@ int k=0;
 
 enum
 {
+
     KEY_RIGHT,
     KEY_LEFT,
     KEY_UP,
@@ -132,25 +132,15 @@ typedef struct
 {
     int x;
     int y;
-    int ID;
     int speed;
+    int ID;
+    int contador;
     int direction; /* -1 = Esquerda, 1 = Direita */
 
     bool live;
 
     ALLEGRO_BITMAP* image;
 } s_bullet;
-
-typedef struct
-{
-    float x;
-    float y;
-
-    int width;
-    int height;
-
-    ALLEGRO_BITMAP* image;
-} s_background;
 
 typedef struct
 {
@@ -164,17 +154,6 @@ typedef struct
 
 /* ------------------------------Funcoes------------------------------ */
 
-/* ~~~~~~~~~~~~~~~~~~~~Background~~~~~~~~~~~~~~~~~~~~ */
-
-void drawnBackground(s_background *bkg)
-{
-    al_draw_bitmap(bkg->image, bkg->x-cameraX, bkg->y-cameraY, 0);
-
-    if(bkg->x + bkg->width < WORLD_W)
-    {
-        al_draw_bitmap(bkg->image, bkg->x-cameraX + bkg->width, bkg->y-cameraY, 0);
-    }
-}
 /* ~~~~~~~~~~~~~~~~~~~~Shoots~~~~~~~~~~~~~~~~~~~~ */
 
 void playerShoot(s_object *player, s_bullet *bullet, ALLEGRO_SAMPLE_INSTANCE *instance_spl)
@@ -198,31 +177,27 @@ void playerShoot(s_object *player, s_bullet *bullet, ALLEGRO_SAMPLE_INSTANCE *in
     }
 }
 
-void enemyShoot(s_object *player, s_object *enemy, s_bullet *bullet)
+void enemyShoot(s_object *player, s_object *enemy, s_bullet *bullet, int *ID, int *contador)
 {
-    if(player->x > enemy->x + 40)
-    {
-        enemy->direction = 1;
-    }
-    if(player->x + 40 < enemy->x)
-    {
-        enemy->direction = -1;
-    }
     if(player->y >= enemy->y && player->y + 35 <= enemy->y + 45 && enemy->live == true && bullet->live == false)
     {
-        if(chance_enemy_shoot == 1 && enemy->direction == -1)
+        if(chance_enemy_shoot == 1 && enemy->direction == -1 && *contador < NUM_BULLET && !(bullet[*ID].live))
         {
-            bullet->live = true;
-            bullet->x = enemy->x - 8;
-            bullet->y = enemy->y + 10;
-            printf("%d", enemy->direction);
+            bullet[*ID].direction = -1;
+            bullet[*ID].x = enemy->x - 8;
+            bullet[*ID].y = enemy->y + 20;
+            bullet[*ID].live = true;
+            (*contador)++;
+            *ID = (*ID + 1) % NUM_BULLET;
         }
-        if(chance_enemy_shoot == 1 && enemy->direction == 1)
+        if(chance_enemy_shoot == 1 && enemy->direction == 1 && *contador < NUM_BULLET && !(bullet[*ID].live))
         {
-            bullet->live = true;
-            bullet->x = enemy->x + 40;
-            bullet->y = enemy->y + 10;
-            printf("%d", enemy->direction);
+            bullet[*ID].direction = 1;
+            bullet[*ID].x = enemy->x + 40;
+            bullet[*ID].y = enemy->y + 20;
+            bullet[*ID].live = true;
+            (*contador)++;
+            *ID = (*ID + 1) % NUM_BULLET;
         }
     }
 }
@@ -269,9 +244,9 @@ void collision_player_tiles(s_object *player, s_object *block, s_animation *jump
     {
         player->x = block->x - 40;
     }
-    if(player->x > block->x && player->x + 5 < block->x + al_get_bitmap_width(img_block) && player->y + 40 > block->y && player->y < block->y + al_get_bitmap_height(img_block))
+    if(player->x > block->x && player->x + 3 < block->x + al_get_bitmap_width(img_block) && player->y + 40 > block->y && player->y < block->y + al_get_bitmap_height(img_block))
     {
-        player->x = block->x + al_get_bitmap_width(img_block) - 5;
+        player->x = block->x + al_get_bitmap_width(img_block) - 3;
     }
 }
 
@@ -293,7 +268,7 @@ void collision_player_enemy(s_object *player, s_object *enemy, int enemy_width, 
     }
 }
 
-void collision_bullet_tiles(s_bullet *bullet, s_object *block, ALLEGRO_BITMAP* img_bullet,ALLEGRO_BITMAP* img_block)
+void collision_bullet_tiles(s_bullet *bullet, s_object *block, ALLEGRO_BITMAP* img_bullet,ALLEGRO_BITMAP* img_block, int atirador /* 0 = player 1 = enemy */, int *bulletCount)
 {
     if(bullet->x < block->x + al_get_bitmap_width(img_block) && block->x < bullet->x + al_get_bitmap_width(img_bullet) && bullet->y < block->y + al_get_bitmap_height(img_block) && block->y < bullet->y + al_get_bitmap_height(img_bullet) && block->live && bullet->live)
     {
@@ -306,6 +281,10 @@ void collision_bullet_tiles(s_bullet *bullet, s_object *block, ALLEGRO_BITMAP* i
     if(bullet->x < 0 + cameraX)
     {
         bullet->live = false;
+    }
+    if(atirador == 1)
+    {
+        (*bulletCount)--;
     }
 }
 
@@ -328,6 +307,16 @@ void collision_bullet_enemy(s_bullet *bullet, s_object *enemy, ALLEGRO_BITMAP* i
             }
         }
         bullet->live = false;
+    }
+}
+
+void collision_bullet_player(s_object *player, s_bullet *bullet, ALLEGRO_BITMAP* img_bullet, int *contador, int player_width, int player_height)
+{
+    if(bullet->x < player->x + player_width && player->x < bullet->x + al_get_bitmap_width(img_bullet) && bullet->y < player->y + player_height && player->y < bullet->y + al_get_bitmap_height(img_bullet) && player->live && bullet->live)
+    {
+        player->life-=5;
+        bullet->live = false;
+        (*contador)--;
     }
 }
 
