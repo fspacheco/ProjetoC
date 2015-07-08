@@ -1,11 +1,12 @@
-﻿Estrutura Código
+﻿**Estrutura Código**
+
 s_object: Estrutura para criação de blocos, inimigos e do player
 
 s_bullet: Estrutura de criação dos tiros
 
-s_animation: Estrutar para animação dos inimigos e do player
+s_animation: Estrutura para animação dos inimigos e do player
 
-Funções Código
+**Funções Código**
 
 playerShoot: Função do tiro do player
 

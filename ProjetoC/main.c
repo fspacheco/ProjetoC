@@ -1,21 +1,10 @@
-/*|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-|| Pedro dos Santos Guerreiro                                                                                          ||
-||Thyago Augusto Reboledo                                                                                              ||
-||Leukocyte                                                                                                            ||
-|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
-
-#include <stdio.h>
-#include <stdlib.h>
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+|| Pedro dos Santos Guerreiro                                                 ||
+||Thyago Augusto Reboledo                                                     ||
+||Leukocyte                                                                   ||
+||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 
 #include "projetoHeader.h"
-
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_primitives.h>
-#include <allegro5/allegro_image.h>
-#include <allegro5/allegro_audio.h>
-#include <allegro5/allegro_acodec.h>
-#include <allegro5/allegro_font.h>
-#include <allegro5/allegro_ttf.h>
 
 int main()
 {
@@ -215,7 +204,6 @@ int main()
 
     /* Carrega as configuracoes (teclado, audio, etc) */
     al_init();
-    al_init_primitives_addon();
     al_install_keyboard();
     al_init_image_addon();
     al_install_audio();
@@ -313,7 +301,11 @@ int main()
     al_start_timer(timer_60);
 
     /* Carregando a fonte */
-    fonte16 = al_load_ttf_font("Joystix.ttf", 16, 0);
+    fonte16 = al_load_ttf_font("Joystix.TTF", 16, 0);
+    if (!fonte16) {
+        printf("Erro ao carregar Joystix.TTF\n");
+        exit(1);
+    }
 
     while(!quit)
     {
@@ -862,8 +854,8 @@ int main()
                 {
                     al_clear_to_color(al_map_rgb(0,0,0));
                     al_draw_bitmap(img_you_win, 0, 0, 0);
-                    al_draw_textf(fonte16, al_map_rgb(0, 0, 0), SCREEN_W/2, SCREEN_H - 48, ALLEGRO_ALIGN_CENTER, "Seus pontos: %d", scores);
-                    al_draw_textf(fonte16, al_map_rgb(0, 0, 0), SCREEN_W/2, SCREEN_H - 32, ALLEGRO_ALIGN_CENTER, "Pressione Esc para sair");
+                    al_draw_textf(fonte16, al_map_rgb(0, 0, 0), SCREEN_W/2, SCREEN_H - 48, ALLEGRO_ALIGN_CENTRE, "Seus pontos: %d", scores);
+                    al_draw_textf(fonte16, al_map_rgb(0, 0, 0), SCREEN_W/2, SCREEN_H - 32, ALLEGRO_ALIGN_CENTRE, "Pressione Esc para sair");
                     al_flip_display();
                 }
             }
@@ -890,8 +882,8 @@ int main()
                 {
                     al_clear_to_color(al_map_rgb(0,0,0));
                     al_draw_bitmap(img_game_over, 0, 0, 0);
-                    al_draw_textf(fonte16, al_map_rgb(255, 0, 0), SCREEN_W/2, SCREEN_H - 48, ALLEGRO_ALIGN_CENTER, "Seus pontos: %d", scores);
-                    al_draw_textf(fonte16, al_map_rgb(255, 0, 0), SCREEN_W/2, SCREEN_H - 32, ALLEGRO_ALIGN_CENTER, "Pressione Esc para sair");
+                    al_draw_textf(fonte16, al_map_rgb(255, 0, 0), SCREEN_W/2, SCREEN_H - 48, ALLEGRO_ALIGN_CENTRE, "Seus pontos: %d", scores);
+                    al_draw_textf(fonte16, al_map_rgb(255, 0, 0), SCREEN_W/2, SCREEN_H - 32, ALLEGRO_ALIGN_CENTRE, "Pressione Esc para sair");
                     al_flip_display();
                 }
             }
